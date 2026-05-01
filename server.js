@@ -17,20 +17,26 @@ const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
 const app = express();
-const PORT = 5000;
-app.use(cors());
+const PORT = process.env.PORT || 5000;
+app.use(cors({
+  origin: "*",
+}));
 app.use(express.json());
 app.use('/uploads', express.static(uploadDir));
 
+app.get("/", (req, res) => {
+  res.send("Backend is running 🚀");
+});
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    let uploadPath = 'uploads/';
-    if (file.fieldname === 'aadhaarFile') uploadPath = 'uploads/aadhar/';
-    else if (file.fieldname === 'nocFile') uploadPath = 'uploads/noc/';
-    else if (file.fieldname === 'idCardFile') uploadPath = 'uploads/idcard/';
-    else if (file.fieldname === 'reportFile') uploadPath = 'uploads/reports/';
-    else if (file.fieldname === 'resumeFile') uploadPath = 'uploads/resume/';
-    else if (file.fieldname === 'profilePhotoFile') uploadPath = 'uploads/photos/';
+    let uploadPath = path.join(__dirname, 'uploads');
+    if (file.fieldname === 'aadhaarFile') uploadPath = path.join(__dirname, 'uploads/aadhar');
+    else if (file.fieldname === 'nocFile') uploadPath = path.join(__dirname, 'uploads/noc');
+    else if (file.fieldname === 'idCardFile') uploadPath = path.join(__dirname, 'uploads/idcard');
+    else if (file.fieldname === 'reportFile') uploadPath = path.join(__dirname, 'uploads/reports');
+    else if (file.fieldname === 'resumeFile') uploadPath = path.join(__dirname, 'uploads/resume');
+    else if (file.fieldname === 'profilePhotoFile') uploadPath = path.join(__dirname, 'uploads/photos');
     if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
     cb(null, uploadPath);
   },
@@ -42,10 +48,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => console.log("Connected to MongoDB Atlas"))
+mongoose.connect(process.env.MONGODB_URI).then(() => console.log("Connected to MongoDB Atlas"))
   .catch(err => console.error("MongoDB connection error:", err));
 
 const ApplicationSchema = new mongoose.Schema({
@@ -350,7 +353,9 @@ app.post('/api/reports/submit', upload.single('reportFile'), async (req, res) =>
       return res.status(400).json({ error: 'Missing required fields or report file' });
     }
 
-    const reportUrl = `http://localhost:5000/uploads/reports/${req.file.filename}`;
+    const BASE_URL = process.env.BASE_URL;
+
+    const reportUrl = `${BASE_URL}/uploads/reports/${req.file.filename}`;
 
     const newReport = new Report({
       studentId,
@@ -1003,9 +1008,9 @@ app.get('/api/applications/count', async (req, res) => {
   try {
     const email = req.query.email;
     // Only count applications that are actually submitted to a faculty (ignore the base application)
-    const count = await Application.countDocuments({ 
-      email, 
-      faculty: { $exists: true, $ne: null, $ne: '' } 
+    const count = await Application.countDocuments({
+      email,
+      faculty: { $exists: true, $ne: null, $ne: '' }
     });
     const finalized = await Application.countDocuments({
       email,
@@ -1370,5 +1375,10 @@ app.get('/api/admin/facultyapplications', async (req, res) => {
 
 // Start Server
 app.listen(PORT, () => {
+<<<<<<< HEAD
   console.log(`Backend running at http://localhost:${PORT}`);
 });
+=======
+  console.log(`Backend running on port ${PORT}`);
+});
+>>>>>>> 119104e (Updated)
