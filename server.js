@@ -19,9 +19,6 @@ if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 const app = express();
 const PORT = 5000;
 app.use(cors());
-app.get("/", (req, res) => {
-  res.send("Backend is running 🚀");
-});
 app.use(express.json());
 app.use('/uploads', express.static(uploadDir));
 
