@@ -1375,10 +1375,5 @@ app.get('/api/admin/facultyapplications', async (req, res) => {
 
 // Start Server
 app.listen(PORT, () => {
-<<<<<<< HEAD
-  console.log(`Backend running at http://localhost:${PORT}`);
-});
-=======
   console.log(`Backend running on port ${PORT}`);
 });
->>>>>>> 119104e (Updated)
